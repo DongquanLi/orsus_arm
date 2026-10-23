@@ -1,0 +1,9 @@
+right_master_arm:
+  ros__parameters:
+    arm_can_id: y1_can0
+    arm_feedback_rate: 400
+    arm_control_type: leader_arm
+    arm_end_type: 3
+    auto_enable: true
+    arm_joint_state_topic: /master_arm_right/joint_states
+    arm_status_topic: /master_arm_right/arm_status

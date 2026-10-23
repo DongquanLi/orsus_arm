@@ -1,0 +1,1 @@
+SUBSYSTEM=="tty", ATTRS{idVendor}=="ad50", ATTRS{idProduct}=="60c4", ATTRS{serial}=="003B00394B57531820383832", SYMLINK+="imeta_y1_can0", GROUP="dialout", MODE="0660", ENV{ID_MM_PORT_IGNORE}="1", ENV{ID_MM_DEVICE_IGNORE}="1"

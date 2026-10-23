@@ -1,0 +1,61 @@
+# ROS workspace output and runtime recordings (at any directory depth).
+logs/
+records/
+build/
+install/
+log/
+devel/
+
+# Python, tooling and editor caches.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.venv/
+venv/
+.vscode/
+.idea/
+
+# Logs, local scratch files and crash dumps.
+*.log
+*.log.*
+*.tmp
+*.swp
+*.swo
+*~
+*.bak
+core
+core.[0-9]*
+
+# Large robot recordings are local data, not source files.
+*.hdf5
+*.h5
+*.bag
+*.mcap
+*.db3
+*.db3-shm
+*.db3-wal
+
+# Machine-specific deployment receipts, snapshots and backups.
+/deploy/backups/
+/deploy/source-backup.json
+/deploy/system-install.json
+/deploy/validation.json
+/deploy/prepared-files.json
+/deploy/replay-recordings-before.json
+/deploy/replay-validation.json
+
+# SLCAN: keep recipes, kernel config and the small deployment module.
+# Public kernel sources, unpacked tools and build/runtime output stay local.
+/slcan-build/source/
+/slcan-build/downloads/
+/slcan-build/tools/
+/slcan-build/kernel-out/
+/slcan-build/logs/
+/slcan-build/running-kernel.kallsyms
+/slcan-build/environment.json
+/slcan-build/artifacts/*
+!/slcan-build/artifacts/slcan.ko
+!/slcan-build/artifacts/slcan.ko.sha256

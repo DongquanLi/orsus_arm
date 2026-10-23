@@ -1,0 +1,7 @@
+{
+  "repository": "https://github.com/rockchip-linux/kernel",
+  "commit": "7a7734a16bd5bc545ec614e5b57eaa6417416e4b",
+  "archive_url": "https://codeload.github.com/rockchip-linux/kernel/tar.gz/7a7734a16bd5bc545ec614e5b57eaa6417416e4b",
+  "archive_sha256": "74f6bb0e14746c36e9fba8eac74f0508707b3e648e824e6f84231b5c20ef4b37",
+  "note": "Public Rockchip source, not confirmed to be the exact vendor build source."
+}

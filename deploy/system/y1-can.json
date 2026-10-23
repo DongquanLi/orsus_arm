@@ -1,0 +1,10 @@
+{
+  "kernel_release": "6.1.141",
+  "device": "/dev/imeta_y1_can0",
+  "interface": "y1_can0",
+  "slcan_speed": "8",
+  "txqueuelen": 1000,
+  "usb_vendor": "ad50",
+  "usb_product": "60c4",
+  "usb_serial": "003B00394B57531820383832"
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "file": "bison_2%3a3.8.2+dfsg-1ubuntu0.22.04.1_arm64.deb",
+    "sha256": "4496f1550c43c0d00fc564cd5ecf1c227748ab450316c86b8f1426d2b4f55afb"
+  },
+  {
+    "file": "cpp-10_10.3.0-15ubuntu1_arm64.deb",
+    "sha256": "a1c1e8cae22b8c965251615d43848a252c6df8623a27bab4e8d06f725496bb1c"
+  },
+  {
+    "file": "flex_2.6.4-8build2_arm64.deb",
+    "sha256": "11489e2ce29050b389dc248f6086490795ed4b1ae166c0e3b055570f27fff165"
+  },
+  {
+    "file": "gcc-10-base_10.3.0-15ubuntu1_arm64.deb",
+    "sha256": "3d0bcdb59086030bf57e732cbb2db79b68f703744496a1d313a16fe9424c1af5"
+  },
+  {
+    "file": "gcc-10_10.3.0-15ubuntu1_arm64.deb",
+    "sha256": "5e4ab5556daaa174dae5011592372a84769d78492bdf404b315e9ce9786e57a3"
+  },
+  {
+    "file": "libgcc-10-dev_10.3.0-15ubuntu1_arm64.deb",
+    "sha256": "f86f572485d4339e7abbee0dffb12b7448da108dbc815619f0cc4fcaa86b4508"
+  }
+]

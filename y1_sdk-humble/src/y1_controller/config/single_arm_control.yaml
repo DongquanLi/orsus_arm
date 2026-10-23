@@ -1,0 +1,11 @@
+right_normal_arm:
+  ros__parameters:
+    arm_can_id: y1_can0
+    arm_feedback_rate: 200
+    arm_control_type: normal_arm
+    arm_end_type: 3
+    auto_enable: true
+    arm_end_pose_control_topic: /master_arm_right/end_pose_control
+    arm_joint_position_control_topic: /master_arm_right/joint_states
+    arm_joint_state_topic: /puppet_arm_right/joint_states
+    arm_status_topic: /puppet_arm_right/arm_status
