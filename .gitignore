@@ -43,6 +43,7 @@ core.[0-9]*
 /deploy/source-backup.json
 /deploy/system-install.json
 /deploy/validation.json
+/deploy/wrist-camera-validation.json
 /deploy/prepared-files.json
 /deploy/replay-recordings-before.json
 /deploy/replay-validation.json
@@ -59,3 +60,24 @@ core.[0-9]*
 /slcan-build/artifacts/*
 !/slcan-build/artifacts/slcan.ko
 !/slcan-build/artifacts/slcan.ko.sha256
+
+# Integration builds and per-device diagnostics.
+build-*/
+install-*/
+log-*/
+/deploy/device-*-setup.json
+/deploy/disabled-feedback-validation.json
+/deploy/can-traffic-profile*.json
+/deploy/guide-command-audit*.json
+/deploy/*.before-*.py
+
+# Per-device investigations and one-off migration helpers.
+/deploy/*.json
+/deploy/can-transport-investigation.md
+/deploy/extend_test.py
+/deploy/finalize_validation.py
+/deploy/inspect_episode.py
+/deploy/install_recording.py
+/deploy/profile_can.py
+/deploy/record_port_swap.py
+/deploy/verify_guide.py

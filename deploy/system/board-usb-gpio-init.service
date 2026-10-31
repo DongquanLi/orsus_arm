@@ -1,0 +1,16 @@
+[Unit]
+Description=Board USB GPIO power and reset initialization
+After=systemd-udev-trigger.service
+Before=y1-can.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/board-usb-gpio-init.sh
+RemainAfterExit=yes
+TimeoutStartSec=45
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

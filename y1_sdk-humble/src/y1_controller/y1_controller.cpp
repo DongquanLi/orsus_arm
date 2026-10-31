@@ -4,6 +4,8 @@
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <iostream>
+#include <algorithm>
+#include <cmath>
 #include <rclcpp/rclcpp.hpp>
 #include <vector>
 
@@ -40,6 +42,7 @@ Y1Controller::Y1Controller() : Node("y1_controller") {
   int arm_end_type = this->declare_parameter("arm_end_type", 0);
   // whether to enable robotic arm, default is true
   bool auto_enable = this->declare_parameter("auto_enable", true);
+  disable_on_shutdown_ = this->declare_parameter("disable_on_shutdown", false);
 
   // get urdf path
   std::string package_path =
@@ -65,6 +68,16 @@ Y1Controller::Y1Controller() : Node("y1_controller") {
   // Make Y1 SDK Interface
   y1_interface_ = std::make_shared<Y1SDKInterface>(can_id, urdf_path,
                                                    arm_end_type, auto_enable);
+}
+
+Y1Controller::~Y1Controller() {
+  if (disable_on_shutdown_ && y1_interface_) {
+    try {
+      y1_interface_->SetEnableArm(false);
+    } catch (const std::exception& error) {
+      std::cerr << "Motor disable on shutdown failed: " << error.what() << std::endl;
+    }
+  }
 }
 
 bool Y1Controller::Init() {
@@ -117,6 +130,39 @@ bool Y1Controller::Init() {
     return false;
   }
 
+  // Opt-in for the owned recording session. Keep the SDK and enable state
+  // alive across homing -> gravity compensation, without restarting a driver.
+  if (this->declare_parameter("allow_teach_switch", false)) {
+    enter_teach_service_ = this->create_service<std_srvs::srv::Trigger>(
+        "~/enter_teach",
+        [this](const std::shared_ptr<std_srvs::srv::Trigger::Request>,
+               std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+          auto positions = y1_interface_->GetJointPosition();
+          auto velocities = y1_interface_->GetJointVelocity();
+          auto errors = y1_interface_->GetJointErrorCode();
+          bool ready = arm_control_type_ == "normal_arm" &&
+                       positions.size() >= 6 && velocities.size() >= 6 &&
+                       errors.size() == positions.size();
+          for (size_t i = 0; ready && i < 6; ++i) {
+            ready = std::isfinite(positions[i]) && std::abs(positions[i]) < 0.03 &&
+                    std::isfinite(velocities[i]) && std::abs(velocities[i]) < 0.05;
+          }
+          ready = ready && std::all_of(errors.begin(), errors.end(),
+                                      [](int code) { return code == 1; });
+          if (!ready) {
+            response->success = false;
+            response->message = "Require normal mode, enabled motors and stationary zero pose";
+            return;
+          }
+          y1_interface_->SetArmControlMode(Y1SDKInterface::ControlMode::GRAVITY_COMPENSATION);
+          arm_control_type_ = "leader_arm";
+          arm_joint_position_control_sub_.reset();
+          arm_end_pose_control_sub_.reset();
+          response->success = true;
+          response->message = "SDK switched to gravity compensation; position subscriptions removed";
+        });
+  }
+
   // joint states publisher
   arm_joint_state_pub_ = this->create_publisher<y1_msg::msg::ArmJointState>(
       arm_joint_state_topic_, 1);
@@ -136,6 +182,7 @@ bool Y1Controller::Init() {
 
 void Y1Controller::ArmEndPoseControlCallback(
     const y1_msg::msg::ArmEndPoseControl::SharedPtr msg) {
+  if (arm_control_type_ == "leader_arm") return;
   // end pose
   std::array<double, 6> end_pose;
   for (size_t i = 0; i < 6; i++) {
@@ -159,6 +206,7 @@ void Y1Controller::FollowArmJointPositionControlCallback(
 
 void Y1Controller::ArmJointPositionControlCallback(
     const y1_msg::msg::ArmJointPositionControl::SharedPtr msg) {
+  if (arm_control_type_ != "normal_arm") return;
   // arm joint position and velocity
   std::array<double, 6> joint_position;
   for (size_t i = 0; i < 6; i++) {

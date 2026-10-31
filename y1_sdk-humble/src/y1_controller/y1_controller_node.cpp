@@ -10,20 +10,25 @@
 
 using namespace imeta::y1_controller;
 
-void signalHandler(int signum) { std::exit(signum); }
-
 int main(int argc, char* argv[]) {
   rclcpp::init(argc, argv);
-  std::signal(SIGINT, signalHandler);
 
-  auto y1_controller = std::make_shared<Y1Controller>();
-  if (!y1_controller->Init()) {
-    std::cout << "Failed to init Planning module!" << std::endl;
-    return -1;
+  std::shared_ptr<Y1Controller> y1_controller;
+  int result = 0;
+  try {
+    y1_controller = std::make_shared<Y1Controller>();
+    if (!y1_controller->Init()) {
+      std::cerr << "Failed to init Planning module!" << std::endl;
+      result = 1;
+    } else if (rclcpp::ok()) {
+      rclcpp::spin(y1_controller);
+    }
+  } catch (const std::exception& error) {
+    std::cerr << "Y1 driver stopped: " << error.what() << std::endl;
+    result = 1;
   }
-
-  rclcpp::spin(y1_controller);
+  y1_controller.reset();  // Run SDK/session cleanup on SIGINT/SIGTERM.
   rclcpp::shutdown();
 
-  return 0;
+  return result;
 }

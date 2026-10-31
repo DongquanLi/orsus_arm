@@ -7,6 +7,7 @@ TASK_DEPLOY="$TASK_ROOT/deploy/system"
 TASK_MODULE="$TASK_ROOT/slcan-build/artifacts/slcan.ko"
 TASK_HASH=c8390e77cdb9d19b05a2c04eade7fa91d9157c3bf5c7db54e44789169aeb909d
 TASK_KERNEL=6.1.141
+mkdir -p "$TASK_ROOT/deploy/backups"
 TASK_BACKUP=$(mktemp -d "$TASK_ROOT/deploy/backups/system-$(TZ=Asia/Shanghai date +%Y%m%d-%H%M%S)-XXXXXX")
 chmod 0755 "$TASK_BACKUP"
 exec > >(tee "$TASK_BACKUP/install.log") 2>&1
@@ -26,18 +27,8 @@ for TASK_PID in $(pgrep -x slcand || true); do
     echo "检测到非本服务管理的 slcand（PID $TASK_PID），请先停止该实例。"; exit 1
   fi
 done
-python3 - <<'PY'
-import subprocess
-from pathlib import Path
-dev=Path('/dev/imeta_y1_can0')
-if not dev.exists(): raise SystemExit('USB2CAN 未连接或设备链接不存在。')
-props=dict(line.split('=',1) for line in subprocess.check_output(
- ['udevadm','info','--query=property','--name',str(dev)],text=True).splitlines() if '=' in line)
-expected={'ID_VENDOR_ID':'ad50','ID_MODEL_ID':'60c4','ID_SERIAL_SHORT':'003B00394B57531820383832'}
-if any(props.get(k) != v for k,v in expected.items()):
- raise SystemExit('设备身份与已测试的 CANable 不一致，停止安装。')
-print('CANable 完整序列号验证通过。')
-PY
+# Resolve the serial before changing installed configuration.
+python3 "$TASK_ROOT/script/can_device.py" --output "$TASK_BACKUP/new.rules" "$@"
 for TASK_CMD in modprobe depmod slcand ip udevadm fuser systemctl; do command -v "$TASK_CMD" >/dev/null; done
 
 echo "[2/6] 备份将要修改的系统文件"
@@ -71,13 +62,12 @@ install -D -m 0644 "$TASK_MODULE" "/lib/modules/$TASK_KERNEL/extra/slcan.ko"
 depmod -a "$TASK_KERNEL"
 modprobe -n -v slcan
 modprobe slcan
-install -D -m 0644 "$TASK_DEPLOY/imeta_y1_can.rules" /etc/udev/rules.d/imeta_y1_can.rules
+install -D -m 0644 "$TASK_BACKUP/new.rules" /etc/udev/rules.d/imeta_y1_can.rules
 install -D -m 0644 "$TASK_DEPLOY/y1-can.json" /etc/y1-can/config.json
 install -D -m 0755 "$TASK_DEPLOY/y1-can-watchdog.py" /usr/local/libexec/y1-can-watchdog.py
 install -D -m 0644 "$TASK_DEPLOY/y1-can.service" /etc/systemd/system/y1-can.service
 udevadm control --reload-rules
-TASK_TTY=$(basename -- "$(readlink -f /dev/imeta_y1_can0)")
-udevadm trigger --action=change --subsystem-match=tty --sysname-match="$TASK_TTY"
+udevadm trigger --action=change --subsystem-match=tty
 udevadm settle --timeout=5
 systemd-analyze verify /etc/systemd/system/y1-can.service
 

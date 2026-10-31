@@ -20,6 +20,7 @@ with tempfile.TemporaryDirectory() as directory:
     path = Path(directory) / "synthetic-feedback.hdf5"
     process = subprocess.Popen([
         sys.executable, str(ROOT / "script/record_demonstration.py"),
+        "--record-only",
         "--topic", "/y1_test_feedback", "--duration", "0.5", "--output", str(path),
     ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=os.environ.copy())
     rclpy.init()

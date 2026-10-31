@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(y1_msg REQUIRED)
 find_package(glog REQUIRED)
 
@@ -54,7 +55,7 @@ target_link_libraries(y1_controller
   glog::glog
   rclcpp::rclcpp
 )
-ament_target_dependencies(y1_controller rclcpp std_msgs y1_msg ament_index_cpp)
+ament_target_dependencies(y1_controller rclcpp std_msgs std_srvs y1_msg ament_index_cpp)
 
 install(TARGETS y1_controller
   DESTINATION lib/${PROJECT_NAME}

@@ -24,10 +24,11 @@ def choose_file(value, root):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="回放本机 Y1 HDF5 v1 轨迹，默认慢速")
+    parser = argparse.ArgumentParser(description="回放本机 Y1 HDF5 v1 轨迹，默认 normal 档（时间轴 0.5 倍速）")
     parser.add_argument("file", nargs="?", help="文件路径或 latest；不填则交互选择")
-    parser.add_argument("--gear", choices=("slow", "normal", "fast"), default="slow")
+    parser.add_argument("--gear", choices=("slow", "normal", "fast"), default="normal", help="回放档位，默认 normal")
     parser.add_argument("--dry-run", action="store_true", help="只验证文件，不连接 ROS、不发送指令")
+    parser.add_argument("--lead-in", type=float, default=3., help="到达起点后等待约多少秒开始动作，默认 3，与档位无关")
     args = parser.parse_args()
     from trajectory_io import load_episode, prepare_replay_targets, replay_profile
     root = Path(__file__).resolve().parents[1]
@@ -36,12 +37,18 @@ def main():
     positions, adjustments = prepare_replay_targets(positions)
     profile = replay_profile()
     scale, velocity = {"slow": (0.25, 1), "normal": (0.5, 3), "fast": (1.0, 5)}[args.gear]
+    from trim_episode import replay_timing
+    motion_index, schedule = replay_timing(timestamps, positions, scale, args.lead_in)
     print(f"轨迹有效：{len(timestamps)} 帧，原时长 {timestamps[-1]:.2f} 秒；{args.gear} 回放")
     print(f"文件：{path}")
     for item in adjustments:
         print(f"[目标限幅] J{item['joint']}：{item['frames']} 帧，最大调整 {item['max_adjustment_rad']:.5f} rad")
     if adjustments:
         print("[说明] 已按当前 SDK 的位置控制软限位生成目标；这些区段不会原样越界回放。原始录制文件未修改。")
+    if motion_index is None:
+        print("未检测到足够明确的运动，不发送回放指令；原文件保留。")
+        return 0
+    print(f"[起步] 起点到位后等待约 {args.lead_in:.2f} 秒；跳过原开头 {timestamps[motion_index]:.2f} 秒等待，中途停顿保留。")
     if args.dry_run:
         return 0
 
@@ -113,10 +120,10 @@ def main():
         else:
             raise RuntimeError("30 秒内未到达起点，停止后续回放")
         start = time.monotonic()
-        for index in range(1, len(timestamps)):
+        for index in range(motion_index, len(timestamps)):
             if not rclpy.ok():
                 break
-            spin_until(start + float(timestamps[index]) / scale)
+            spin_until(start + float(schedule[index - motion_index]))
             if not rclpy.ok():
                 break
             publish(positions[index], velocity)

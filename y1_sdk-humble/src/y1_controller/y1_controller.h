@@ -3,6 +3,7 @@
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
+#include "std_srvs/srv/trigger.hpp"
 
 #include "y1_msg/msg/arm_end_pose_control.hpp"
 #include "y1_msg/msg/arm_joint_position_control.hpp"
@@ -22,7 +23,7 @@ using namespace std::chrono_literals;
 class Y1Controller : public rclcpp::Node {
  public:
   Y1Controller();
-  ~Y1Controller() = default;
+  ~Y1Controller();
 
  public:
   /**
@@ -66,6 +67,7 @@ class Y1Controller : public rclcpp::Node {
       arm_joint_position_control_sub_;
 
   rclcpp::TimerBase::SharedPtr arm_information_timer_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr enter_teach_service_;
 
   std::shared_ptr<Y1SDKInterface> y1_interface_;
 
@@ -76,6 +78,7 @@ class Y1Controller : public rclcpp::Node {
   std::string arm_joint_state_topic_;
   std::string arm_status_topic_;
   std::string arm_control_type_;
+  bool disable_on_shutdown_ = false;
 };
 
 }  // namespace y1_controller

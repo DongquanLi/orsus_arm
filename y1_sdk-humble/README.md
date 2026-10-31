@@ -1,3 +1,7 @@
+# 厂商 SDK 原始参考
+
+> 当前项目的安装、USB 自启、示教和回放请使用 [根目录 README](../README.md)。下面保留厂商原始说明用于接口参考；其中手工 slcand / start_can0.sh 命令不要与本项目 y1-can 服务同时运行。当前根目录入口为 bash y1.sh。
+
 # Software Dependency
 
   - Ubuntu 22.04 LTS

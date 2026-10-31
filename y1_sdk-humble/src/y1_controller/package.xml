@@ -12,6 +12,7 @@
 
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
   <depend>y1_msg</depend>
   <depend>ament_index_cpp</depend>
 
